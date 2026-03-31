@@ -1,0 +1,67 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE - VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+*.orig
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+*.jdt.ls
+
+# Compiled classes
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Local environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+out/
+bin/
+dist/
+
+# Runtime data
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE temp files
+.factorypath
+.classpath
