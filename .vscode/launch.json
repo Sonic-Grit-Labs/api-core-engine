@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run Tests",
+      "request": "launch",
+      "mainClass": "",
+      "projectName": "mogul-engine-core",
+      "vmArgs": "-Dspring.profiles.active=test"
+    }
+  ]
+}

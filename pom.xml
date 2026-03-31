@@ -196,4 +196,12 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Sonic-Grit-Labs Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Sonic-Grit-Labs/mogul-engine-core</url>
+        </repository>
+    </distributionManagement>
 </project>

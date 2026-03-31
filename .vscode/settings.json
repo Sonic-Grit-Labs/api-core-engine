@@ -1,0 +1,19 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.project.sourcePaths": ["src/main/java", "src/test/java"],
+  "java.project.outputPath": "target",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "maven.executable.path": "mvn",
+  "editor.formatOnSave": true,
+  "editor.tabSize": 4,
+  "files.exclude": {
+    "**/target": true,
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java"
+  }
+}
