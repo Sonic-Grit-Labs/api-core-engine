@@ -1,0 +1,120 @@
+# ============================================================
+# Semgrep Custom Rules — Mogul Audio Technologies
+# ============================================================
+# Copy to repo root as .semgrep.yml
+# These rules enforce Mogul-specific security patterns.
+# ============================================================
+
+rules:
+  # ── Never log PII ──────────────────────────────────────
+  - id: mogul-no-log-email
+    patterns:
+      - pattern: |
+          $LOGGER.$METHOD(..., ...$USER.getEmail(), ...);
+    message: "Never log user email — PII violation (LGPD/GDPR)"
+    severity: ERROR
+    languages: [java]
+
+  - id: mogul-no-log-password
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $LOGGER.$METHOD(..., ...$X.getPassword(), ...);
+          - pattern: |
+              $LOGGER.$METHOD(..., "password", ...);
+    message: "Never log passwords or password-related fields"
+    severity: ERROR
+    languages: [java]
+
+  # ── Never hardcode secrets ─────────────────────────────
+  - id: mogul-no-hardcoded-jwt-secret
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $X = "sk-...";
+          - pattern: |
+              $X = "sk_live_...";
+          - pattern: |
+              String $KEY = "Bearer ...";
+    message: "Hardcoded API key or token detected — use Railway env vars"
+    severity: ERROR
+    languages: [java]
+
+  # ── Always validate JWT ────────────────────────────────
+  - id: mogul-jwt-must-validate
+    pattern: |
+      Jwts.parser().$METHOD($KEY).build().parseSignedClaims($TOKEN)
+    fix: |
+      Jwts.parser().verifyWith($KEY).build().parseSignedClaims($TOKEN)
+    message: "Use verifyWith() instead of deprecated methods for JWT validation"
+    severity: WARNING
+    languages: [java]
+
+  # ── No raw SQL concatenation ───────────────────────────
+  - id: mogul-no-sql-concat
+    patterns:
+      - pattern-either:
+          - pattern: |
+              "SELECT " + $X
+          - pattern: |
+              "INSERT " + $X
+          - pattern: |
+              "UPDATE " + $X
+          - pattern: |
+              "DELETE " + $X
+    message: "SQL string concatenation detected — use parameterized queries or JPA"
+    severity: ERROR
+    languages: [java]
+
+  # ── Entitlement checks required ────────────────────────
+  - id: mogul-controller-needs-auth
+    patterns:
+      - pattern: |
+          @$MAPPING(...)
+          public $RET $METHOD(...) { ... }
+      - pattern-not: |
+          @PreAuthorize(...)
+          @$MAPPING(...)
+          public $RET $METHOD(...) { ... }
+      - metavariable-regex:
+          metavariable: $MAPPING
+          regex: (GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping)
+    paths:
+      include:
+        - "**/controller/**"
+      exclude:
+        - "**/AuthController.java"
+        - "**/HealthController.java"
+    message: "Controller endpoint missing @PreAuthorize — add entitlement check"
+    severity: WARNING
+    languages: [java]
+
+  # ── Never expose stack traces ──────────────────────────
+  - id: mogul-no-stacktrace-in-response
+    pattern: |
+      $E.printStackTrace();
+    message: "Never use printStackTrace() — use structured logging instead"
+    severity: ERROR
+    languages: [java]
+
+  # ── React: No dangerouslySetInnerHTML ──────────────────
+  - id: mogul-no-dangerous-html
+    pattern: |
+      dangerouslySetInnerHTML={...}
+    message: "dangerouslySetInnerHTML is a XSS risk — use safe rendering"
+    severity: ERROR
+    languages: [typescript, javascript, tsx, jsx]
+
+  # ── React: No localStorage for tokens ──────────────────
+  - id: mogul-no-localstorage-token
+    patterns:
+      - pattern-either:
+          - pattern: |
+              localStorage.setItem("token", ...)
+          - pattern: |
+              localStorage.setItem("accessToken", ...)
+          - pattern: |
+              localStorage.setItem("refreshToken", ...)
+    message: "Never store auth tokens in localStorage — use memory-based AuthContext"
+    severity: ERROR
+    languages: [typescript, javascript, tsx, jsx]
