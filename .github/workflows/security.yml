@@ -1,0 +1,120 @@
+# ============================================================
+# Security-in-Build Pipeline — Java repos
+# ============================================================
+# Copy to .github/workflows/security.yml in:
+#   mogul-access-engine, mogul-LLM-engine, mogul-engine-core
+#
+# Runs on EVERY PR and push to main:
+#   1. Gitleaks (secrets detection)
+#   2. SpotBugs + Find Security Bugs (Java SAST)
+#   3. OWASP Dependency-Check (CVE scanning)
+#   4. Semgrep (custom Mogul rules)
+#
+# All checks MUST pass to merge.
+# ============================================================
+
+name: Security Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: "security-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  # ── Secrets Detection ──────────────────────────────────
+  gitleaks:
+    name: Gitleaks — Secrets Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for deep scan
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── Static Analysis (SAST) ─────────────────────────────
+  spotbugs:
+    name: SpotBugs + Find Security Bugs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build + SpotBugs analysis
+        run: mvn compile spotbugs:check -q
+        # Requires spotbugs-maven-plugin in pom.xml (see below)
+
+      - name: Upload SpotBugs report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-report
+          path: target/spotbugs*.xml
+
+  # ── Custom Rules (Semgrep) ─────────────────────────────
+  semgrep:
+    name: Semgrep — Custom Security Rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: .semgrep.yml
+        env:
+          SEMGREP_RULES: >-
+            p/java
+            p/owasp-top-ten
+            p/jwt
+
+  # ── Dependency CVE Scanning ────────────────────────────
+  dependency-check:
+    name: OWASP Dependency-Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run OWASP Dependency-Check
+        run: mvn dependency-check:check -DfailBuildOnCVSS=7 -q
+        # Requires dependency-check-maven plugin in pom.xml
+
+      - name: Upload Dependency-Check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+
+  # ── Gate ────────────────────────────────────────────────
+  security-gate:
+    name: Security Gate
+    needs: [gitleaks, spotbugs, semgrep, dependency-check]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "All security checks passed ✅"
