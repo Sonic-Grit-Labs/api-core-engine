@@ -92,11 +92,53 @@ Add to your service's `pom.xml`:
 <dependency>
     <groupId>io.theawesomemogul</groupId>
     <artifactId>mogul-engine-core</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
 No explicit version management needed; all transitive dependencies are managed by Spring Boot 3.2.
+
+### GitHub Packages Repository Configuration
+
+Since this library is published to **GitHub Packages**, consuming projects (e.g. `mogul-LLM-engine`, `mogul-access-engine`) must configure the GitHub Packages Maven repository.
+
+**1. Add the repository to your service's `pom.xml`:**
+
+```xml
+<repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/Sonic-Grit-Labs/mogul-engine-core</url>
+    </repository>
+</repositories>
+```
+
+**2. Configure authentication in `~/.m2/settings.xml`** (local development):
+
+```xml
+<settings>
+    <servers>
+        <server>
+            <id>github</id>
+            <username>YOUR_GITHUB_USERNAME</username>
+            <password>YOUR_GITHUB_TOKEN</password>
+        </server>
+    </servers>
+</settings>
+```
+
+> **Note:** The token needs the `read:packages` scope.
+
+**3. For CI/CD (GitHub Actions)**, the workflow already has access via `GITHUB_TOKEN`. Add this step before building:
+
+```yaml
+- uses: actions/setup-java@v4
+  with:
+    java-version: '21'
+    distribution: 'temurin'
+    server-id: github
+    settings-path: ${{ github.workspace }}
+```
 
 ## Module Overview
 
@@ -533,8 +575,8 @@ mvn clean test
 mvn clean install
 
 # Create git tag (when releasing)
-git tag -a v1.0.0 -m "Release 1.0.0"
-git push origin v1.0.0
+git tag -a v1.0.1 -m "Release 1.0.1"
+git push origin v1.0.1
 ```
 
 Future versions: Update `pom.xml` version and commit with semantic versioning.

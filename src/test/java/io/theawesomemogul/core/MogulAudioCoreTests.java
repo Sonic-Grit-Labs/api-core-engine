@@ -94,9 +94,9 @@ class MogulAudioCoreTests {
 
     @Test
     void testMogulExceptionHandling() {
-        MogulNotFoundException exception = new MogulNotFoundException("User not found")
-                .withDetail("userId", 123)
-                .withDetail("searchedAt", "2026-03-31");
+        MogulNotFoundException exception = new MogulNotFoundException("User not found");
+        exception.withDetail("userId", 123);
+        exception.withDetail("searchedAt", "2026-03-31");
 
         assertEquals("MOG-NOT-FOUND", exception.getErrorCode());
         assertEquals(404, exception.getHttpStatus().value());
@@ -106,9 +106,9 @@ class MogulAudioCoreTests {
 
     @Test
     void testMogulBadRequestException() {
-        MogulBadRequestException exception = new MogulBadRequestException("Invalid input")
-                .withDetail("field", "email")
-                .withDetail("reason", "format");
+        MogulBadRequestException exception = new MogulBadRequestException("Invalid input");
+        exception.withDetail("field", "email");
+        exception.withDetail("reason", "format");
 
         assertEquals("MOG-BAD-REQUEST", exception.getErrorCode());
         assertEquals(400, exception.getHttpStatus().value());
