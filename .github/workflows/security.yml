@@ -59,8 +59,16 @@ jobs:
           cache: maven
 
       - name: Build + SpotBugs analysis
-        run: mvn compile spotbugs:check -q
-        # Requires spotbugs-maven-plugin in pom.xml (see below)
+        run: >
+          mvn compile
+          com.github.spotbugs:spotbugs-maven-plugin:4.8.3.1:check
+          -Dspotbugs.effort=Max
+          -Dspotbugs.threshold=Medium
+          -T 1C
+          --no-transfer-progress
+          -q
+        # Uses fully qualified goal so Maven resolves the plugin without it being in pom.xml;
+        # activate the 'security' profile (-Psecurity) for local runs with findsecbugs extension
 
       - name: Upload SpotBugs report
         if: always()
@@ -101,8 +109,15 @@ jobs:
           cache: maven
 
       - name: Run OWASP Dependency-Check
-        run: mvn dependency-check:check -DfailBuildOnCVSS=7 -q
-        # Requires dependency-check-maven plugin in pom.xml
+        run: >
+          mvn
+          org.owasp:dependency-check-maven:9.0.9:check
+          -DfailBuildOnCVSS=7
+          -T 1C
+          --no-transfer-progress
+          -q
+        # Uses fully qualified goal so Maven resolves the plugin without it being in pom.xml;
+        # activate the 'security' profile (-Psecurity) for local runs
 
       - name: Upload Dependency-Check report
         if: always()
