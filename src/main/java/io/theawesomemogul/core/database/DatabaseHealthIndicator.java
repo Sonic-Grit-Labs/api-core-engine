@@ -1,8 +1,8 @@
 package io.theawesomemogul.core.database;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -11,8 +11,10 @@ import java.sql.Connection;
 /**
  * Health indicator for database connectivity in Mogul Audio applications.
  *
- * This component provides real-time database health status for Spring Boot Actuator,
- * allowing monitoring systems to track database availability and connection pool health.
+ * This component provides real-time database health status for Spring Boot
+ * Actuator,
+ * allowing monitoring systems to track database availability and connection
+ * pool health.
  *
  * The indicator performs:
  * - Connection availability check
