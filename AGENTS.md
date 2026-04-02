@@ -5,7 +5,7 @@
 
 **Last updated:** 2026-04-02
 **Maintainer:** Sonic Grit Ventures / @usegall
-**Applies to:** mogul-engine-core, mogul-access-engine, mogul-AI-engine
+**Applies to:** api-core-engine, beacon-access-engine, mogul-AI-engine
 
 ---
 
@@ -17,7 +17,7 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 
 | Component               | Version   | Management                          |
 |------------------------|-----------|-------------------------------------|
-| Java (JDK)             | 21        | `java.version` property             |
+| Java (JDK)             | 25        | `java.version` property             |
 | Spring Boot            | 4.0.5     | Parent POM `spring-boot-starter-parent` |
 | Spring Framework       | 7.0.x     | Managed by Spring Boot BOM          |
 | Hibernate / JPA        | 7.x       | Managed by Spring Boot BOM          |
@@ -45,7 +45,7 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 
 | Dependency                  | Version  | Used In        | Property Key                    |
 |-----------------------------|----------|----------------|---------------------------------|
-| mogul-engine-core           | 2.0.0    | AI, Access     | Direct version in `<dependency>` |
+| api-core-engine             | 2.0.0    | AI, Access     | Direct version in `<dependency>` |
 | JJWT (io.jsonwebtoken)      | 0.13.0   | Access only    | `${jjwt.version}`               |
 | SpringDoc OpenAPI           | 3.0.2    | AI, Access     | `${springdoc-openapi.version}`   |
 | Spring Boot DevTools        | BOM      | Dev profile    | Managed by Spring Boot BOM       |
