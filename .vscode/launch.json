@@ -5,7 +5,7 @@
       "type": "java",
       "name": "Run Tests",
       "request": "launch",
-      "mainClass": "",
+      "mainClass": "io.theawesomemogul.core.ApiCoreEngineTests",
       "projectName": "mogul-engine-core",
       "vmArgs": "-Dspring.profiles.active=test"
     }

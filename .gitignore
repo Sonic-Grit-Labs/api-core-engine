@@ -14,6 +14,7 @@ buildNumber.properties
 .vscode/
 *.code-workspace
 .history/
+./src/test
 
 # IDE - IntelliJ
 .idea/
