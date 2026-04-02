@@ -2,19 +2,19 @@
 MOGUL AUDIO CORE - PROJECT SUMMARY
 ================================================================================
 
-Project:        mogul-audio-core
+Project:        api-core-engine
 Type:           Maven JAR Library
 Java Version:   21
 Spring Boot:    3.2.0 (dependency management only)
 Group ID:       io.theawesomemogul
-Artifact ID:    mogul-audio-core
-Version:        1.0.0-SNAPSHOT
+Artifact ID:    api-core-engine
+Version:        2.0.0
 
 ================================================================================
 PROJECT STRUCTURE
 ================================================================================
 
-mogul-audio-core/
+api-core-engine/
 ├── .gitignore                          # Git ignore patterns
 ├── .vscode/
 │   ├── settings.json                   # VS Code Java settings
