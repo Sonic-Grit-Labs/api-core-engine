@@ -26,6 +26,7 @@
         <java.version>25</java.version>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
+        <lombok.version>1.18.36</lombok.version>
         <flyway.version>12.3.0</flyway.version>
         <spotbugs.version>4.8.3.1</spotbugs.version>
         <findsecbugs.version>1.13.0</findsecbugs.version>
@@ -145,6 +146,13 @@
                     <source>25</source>
                     <target>25</target>
                     <release>25</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
 
