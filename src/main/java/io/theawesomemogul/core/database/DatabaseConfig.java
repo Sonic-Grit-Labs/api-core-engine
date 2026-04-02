@@ -1,92 +1,36 @@
 package io.theawesomemogul.core.database;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-
-import javax.sql.DataSource;
 
 /**
  * Shared database configuration for Mogul Audio applications.
  *
- * This configuration provides centralized DataSource bean setup with HikariCP
- * connection pooling, allowing mogul-access-engine and mogul-LLM-engine to use
- * consistent database connectivity patterns.
+ * <p>DataSource creation is delegated entirely to Spring Boot auto-configuration,
+ * which reads {@code spring.datasource.*} properties from each application's
+ * {@code application.yml} and environment variables.</p>
  *
- * The configuration reads from Spring Boot properties and defaults to sensible
- * pool settings. Properties can be overridden via application.yml or environment
- * variables.
+ * <p>Each engine defines its own datasource properties:</p>
+ * <ul>
+ *   <li><b>mogul-access-engine</b> — {@code POSTGRES_HOST}, {@code POSTGRES_PORT},
+ *       {@code POSTGRES_DB}, {@code POSTGRES_USER}, {@code POSTGRES_PASSWORD}</li>
+ *   <li><b>mogul-AI-engine</b> — {@code DATASOURCE_URL}, {@code DATABASE_USERNAME},
+ *       {@code DATABASE_PASSWORD}</li>
+ * </ul>
  *
- * Connection pool properties:
- * - Maximum pool size: 20 (configurable)
- * - Minimum idle connections: 5 (configurable)
- * - Connection timeout: 30 seconds
- * - Idle timeout: 10 minutes
- * - Max lifetime: 30 minutes
- * - Health check: SELECT 1 to validate connections
+ * <p>HikariCP connection pool tuning is done via {@code spring.datasource.hikari.*}
+ * properties in each application's YAML profile (production, staging, dev).</p>
  *
- * Example application.yml configuration:
- * <pre>
- * spring:
- *   datasource:
- *     url: jdbc:postgresql://localhost:5432/mogul_audio
- *     username: mogul_user
- *     password: ${DB_PASSWORD}
- *     hikari:
- *       maximum-pool-size: 20
- *       minimum-idle: 5
- * </pre>
+ * <p><b>Important:</b> This class intentionally does NOT create a {@code DataSource}
+ * bean. A previous version used {@code System.getenv("DATABASE_URL")} which
+ * conflicts with Railway's auto-injected {@code DATABASE_URL} (non-JDBC URI format)
+ * and uses different variable names than the engines expect.</p>
  *
  * @author Mogul Audio Core Team
- * @since 1.0.0
- * @see HikariDataSource
+ * @since 2.0.0
+ * @see org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
  */
 @Configuration
 public class DatabaseConfig {
-
-    /**
-     * Creates a HikariCP DataSource bean with optimized connection pooling.
-     *
-     * This bean is only created if no other DataSource bean exists, allowing
-     * applications to override with custom configurations if needed.
-     *
-     * Configuration includes:
-     * - Pool size optimization for typical Mogul Audio workloads
-     * - Connection validation via health check query
-     * - Proper timeout and lifecycle management
-     * - PostgreSQL-specific optimizations
-     *
-     * @return configured HikariDataSource for database connectivity
-     * @since 1.0.0
-     */
-    @Bean
-    @ConditionalOnMissingBean(DataSource.class)
-    public DataSource hikariDataSource() {
-        HikariConfig config = new HikariConfig();
-
-        // Connection pool sizing
-        config.setMaximumPoolSize(20);
-        config.setMinimumIdle(5);
-
-        // Timeouts (in milliseconds)
-        config.setConnectionTimeout(30000);   // 30 seconds
-        config.setIdleTimeout(600000);        // 10 minutes
-        config.setMaxLifetime(1800000);       // 30 minutes
-
-        // Health check and validation
-        config.setConnectionTestQuery("SELECT 1");
-        config.setLeakDetectionThreshold(60000); // 1 minute
-
-        // PostgreSQL specific
-        config.setAutoCommit(true);
-        config.setJdbcUrl(System.getenv("DATABASE_URL"));
-        config.setUsername(System.getenv("DATABASE_USER"));
-        config.setPassword(System.getenv("DATABASE_PASSWORD"));
-
-        return new HikariDataSource(config);
-    }
+    // DataSource bean is auto-configured by Spring Boot.
+    // HikariCP pool settings come from spring.datasource.hikari.* properties.
 }
