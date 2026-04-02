@@ -19,7 +19,7 @@
 
     <name>Mogul Engine Core</name>
     <description>Shared Java library of common implementations for the Mogul Audio Technologies ecosystem</description>
-    <url>https://github.com/Sonic-Grit-Labs/mogul-engine-core</url>
+    <url>https://github.com/Sonic-Grit-Labs/api-core-engine</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -282,7 +282,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Sonic-Grit-Labs Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/Sonic-Grit-Labs/mogul-engine-core</url>
+            <url>https://maven.pkg.github.com/Sonic-Grit-Labs/api-core-engine</url>
         </repository>
     </distributionManagement>
 </project>
