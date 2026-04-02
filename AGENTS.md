@@ -117,6 +117,23 @@ All CI tools MUST be pinned to exact versions. Never use `@latest` or unpinned i
 - run: npm install -g @railway/cli
 ```
 
+### Railway CLI 3.22.0 — No `--project` Flag
+
+Railway CLI 3.22.0 removed `--project` as an inline flag. The project ID MUST be passed via `RAILWAY_PROJECT_ID` environment variable.
+
+```yaml
+# CORRECT — project ID via env var
+- name: Deploy to Railway
+  run: railway up --detach --service my-service --environment production
+  env:
+    RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+    RAILWAY_PROJECT_ID: b881a879-568e-4fd9-8371-e991874a81bf
+
+# WRONG — --project flag no longer accepted
+- name: Deploy to Railway
+  run: railway up --detach --service my-service --project b881a879-... --environment production
+```
+
 ---
 
 ## 3. Spring Boot 4.x Compatibility Patterns
