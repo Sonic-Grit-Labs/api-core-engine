@@ -1,11 +1,11 @@
-# Mogul Audio Technologies — Engineering Standards for AI Agents
+# Mogul Audio Technologies â Engineering Standards for AI Agents
 
 > **Canonical reference for ALL code generation, review, and build configuration.**
 > Every AI agent (GitHub Copilot, Claude, Cursor, etc.) MUST consult this file before writing, modifying, or reviewing any code in this repository.
 
-**Last updated:** 2026-04-02
+**Last updated:** 2026-04-03
 **Maintainer:** Sonic Grit Ventures / @usegall
-**Applies to:** api-core-engine, beacon-access-engine, mogul-AI-engine
+**Applies to:** mogul-engine-core, mogul-access-engine, mogul-AI-engine, mogul-api-gateway
 
 ---
 
@@ -17,7 +17,7 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 
 | Component               | Version   | Management                          |
 |------------------------|-----------|-------------------------------------|
-| Java (JDK)             | 25        | `java.version` property             |
+| Java (JDK)             | 21        | `java.version` property             |
 | Spring Boot            | 4.0.5     | Parent POM `spring-boot-starter-parent` |
 | Spring Framework       | 7.0.x     | Managed by Spring Boot BOM          |
 | Hibernate / JPA        | 7.x       | Managed by Spring Boot BOM          |
@@ -25,7 +25,20 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 | PostgreSQL Driver      | BOM       | Managed by Spring Boot BOM          |
 | Flyway                 | 12.3.0    | `${flyway.version}` property        |
 | Lombok                 | BOM       | Managed by Spring Boot BOM          |
-| Jackson                | BOM       | Managed by Spring Boot BOM          |
+| Jackson                | 3.x (BOM) | Managed by Spring Boot BOM         |
+
+### Spring Cloud Stack (mogul-api-gateway only)
+
+| Component                          | Version   | Notes                                    |
+|-----------------------------------|-----------|------------------------------------------|
+| Spring Cloud BOM                  | 2025.1.1  | Oakwood â REQUIRED for Spring Boot 4.0.1+ |
+| Spring Cloud Gateway Server       | 5.x (BOM) | Managed by Spring Cloud BOM              |
+| Gateway Starter Artifact          | `spring-cloud-starter-gateway-server-webflux` | REPLACES deprecated `spring-cloud-starter-gateway` |
+
+> **CRITICAL:** Spring Cloud `2025.0.x` is INCOMPATIBLE with Spring Boot `4.0.1+`.
+> Only `2025.1.x` (Oakwood) works with Spring Boot `4.0.5`.
+> The old artifact `spring-cloud-starter-gateway` was deprecated in 2025.1.x â
+> use `spring-cloud-starter-gateway-server-webflux` instead.
 
 ### Build Toolchain
 
@@ -45,9 +58,9 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 
 | Dependency                  | Version  | Used In        | Property Key                    |
 |-----------------------------|----------|----------------|---------------------------------|
-| api-core-engine             | 2.0.0    | AI, Access     | Direct version in `<dependency>` |
+| mogul-engine-core           | 2.0.0    | AI, Access     | Direct version in `<dependency>` |
 | JJWT (io.jsonwebtoken)      | 0.13.0   | Access only    | `${jjwt.version}`               |
-| SpringDoc OpenAPI           | 3.0.2    | AI, Access     | `${springdoc-openapi.version}`   |
+| SpringDoc OpenAPI           | 3.0.1    | AI, Access     | `${springdoc-openapi.version}`   |
 | Spring Boot DevTools        | BOM      | Dev profile    | Managed by Spring Boot BOM       |
 
 ### CI/CD Tooling
@@ -77,7 +90,7 @@ Every dependency and plugin version that is NOT managed by the Spring Boot BOM *
     <version>${flyway.version}</version>
 </dependency>
 
-<!-- WRONG — hardcoded version -->
+<!-- WRONG â hardcoded version -->
 <dependency>
     <groupId>org.flywaydb</groupId>
     <artifactId>flyway-core</artifactId>
@@ -85,19 +98,19 @@ Every dependency and plugin version that is NOT managed by the Spring Boot BOM *
 </dependency>
 ```
 
-### BOM-Managed Dependencies — NO explicit version
+### BOM-Managed Dependencies â NO explicit version
 
 Dependencies managed by `spring-boot-starter-parent` BOM must NOT declare an explicit version. Spring Boot manages these transitively.
 
 ```xml
-<!-- CORRECT — version managed by BOM -->
+<!-- CORRECT â version managed by BOM -->
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
     <scope>runtime</scope>
 </dependency>
 
-<!-- WRONG — overriding BOM version without reason -->
+<!-- WRONG â overriding BOM version without reason -->
 <dependency>
     <groupId>org.postgresql</groupId>
     <artifactId>postgresql</artifactId>
@@ -117,21 +130,27 @@ All CI tools MUST be pinned to exact versions. Never use `@latest` or unpinned i
 - run: npm install -g @railway/cli
 ```
 
-### Railway CLI 3.22.0 — No `--project` Flag
+### Railway CLI 3.22.0 â Deploy Pattern
 
-Railway CLI 3.22.0 removed `--project` as an inline flag. The project ID MUST be passed via `RAILWAY_PROJECT_ID` environment variable.
+Railway CLI 3.22.0 removed `--project` as an inline flag for `railway up`. The correct CI/CD approach is a two-step process: `railway link` then `railway up`.
+
+**Token type:** Use `RAILWAY_TOKEN` (project-scoped), NOT `RAILWAY_API_TOKEN` (account-level). Falls back to `RAILWAY_API_TOKEN` if project token not configured.
 
 ```yaml
-# CORRECT — project ID via env var
-- name: Deploy to Railway
-  run: railway up --detach --service my-service --environment production
+# CORRECT â link first, then deploy
+- name: Install Railway CLI
+  run: npm install -g @railway/cli@3.22.0
+- name: Link Railway project
+  run: railway link <PROJECT_ID> --service my-service --environment production
   env:
-    RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
-    RAILWAY_PROJECT_ID: b881a879-568e-4fd9-8371-e991874a81bf
-
-# WRONG — --project flag no longer accepted
+    RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN || secrets.RAILWAY_API_TOKEN }}
 - name: Deploy to Railway
-  run: railway up --detach --service my-service --project b881a879-... --environment production
+  run: railway up --detach
+  env:
+    RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN || secrets.RAILWAY_API_TOKEN }}
+
+# WRONG â --project flag no longer accepted in railway up
+- run: railway up --detach --service my-service --project <ID> --environment production
 ```
 
 ---
@@ -140,7 +159,7 @@ Railway CLI 3.22.0 removed `--project` as an inline flag. The project ID MUST be
 
 Spring Boot 4.0 (Spring Framework 7.0) introduced **breaking changes** from 3.x. All agents MUST apply these patterns.
 
-### 3.1 ObjectMapper — Explicit Bean Required
+### 3.1 ObjectMapper â Explicit Bean Required
 
 Spring Boot 4.x does NOT auto-configure `ObjectMapper` in Servlet-based applications. Every service module MUST provide an explicit `@Bean`.
 
@@ -161,12 +180,12 @@ public class JacksonConfig {
 
 **Rule:** If you add a new service module, always include `JacksonConfig.java` with `@Primary ObjectMapper`.
 
-### 3.2 WebClient.Builder — Fresh Instances Per Bean
+### 3.2 WebClient.Builder â Fresh Instances Per Bean
 
 Spring Boot 4.x may not auto-configure `WebClient.Builder`. When creating multiple `WebClient` beans, use fresh `WebClient.builder()` instances to prevent header bleed.
 
 ```java
-// CORRECT — fresh builder per bean
+// CORRECT â fresh builder per bean
 @Bean
 public WebClient openAiWebClient() {
     return WebClient.builder()
@@ -183,7 +202,7 @@ public WebClient claudeWebClient() {
             .build();
 }
 
-// WRONG — shared injected builder causes header bleed
+// WRONG â shared injected builder causes header bleed
 @Bean
 public WebClient openAiWebClient(WebClient.Builder builder) {
     return builder.baseUrl(openAiBaseUrl)
@@ -192,12 +211,12 @@ public WebClient openAiWebClient(WebClient.Builder builder) {
 }
 ```
 
-### 3.3 ExceptionHandler — No Ambiguous Handlers
+### 3.3 ExceptionHandler â No Ambiguous Handlers
 
 Spring Boot 4.x strictly rejects ambiguous `@ExceptionHandler` methods for the same exception type within a single bean hierarchy. If a child class extends a parent `@RestControllerAdvice`, it MUST `@Override` the parent's catch-all rather than declaring a separate method.
 
 ```java
-// CORRECT — override parent method
+// CORRECT â override parent method
 @Override
 @ExceptionHandler(Exception.class)
 public ResponseEntity<ErrorResponse> handleGenericException(
@@ -205,7 +224,7 @@ public ResponseEntity<ErrorResponse> handleGenericException(
     // child-specific logic
 }
 
-// WRONG — new method with same exception type as parent
+// WRONG â new method with same exception type as parent
 @ExceptionHandler(Exception.class)
 public ResponseEntity<ErrorResponse> handleUnexpected(
         Exception ex, HttpServletRequest request) {
@@ -213,19 +232,19 @@ public ResponseEntity<ErrorResponse> handleUnexpected(
 }
 ```
 
-### 3.4 Hibernate Dialect — Do NOT Specify Explicitly
+### 3.4 Hibernate Dialect â Do NOT Specify Explicitly
 
 Hibernate 7.x auto-detects the dialect from the JDBC URL. Specifying `hibernate.dialect` explicitly triggers warning `HHH90000025` and may cause unexpected behavior.
 
 ```yaml
-# CORRECT — let Hibernate auto-detect
+# CORRECT â let Hibernate auto-detect
 spring:
   jpa:
     properties:
       hibernate:
         format_sql: true
 
-# WRONG — explicit dialect causes HHH90000025
+# WRONG â explicit dialect causes HHH90000025
 spring:
   jpa:
     properties:
@@ -242,7 +261,7 @@ Spring Boot 4.x requires Jakarta EE 11. All imports MUST use `jakarta.*` namespa
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotBlank;
 
-// WRONG — will not compile
+// WRONG â will not compile
 import javax.servlet.http.HttpServletRequest;
 ```
 
@@ -254,11 +273,11 @@ import javax.servlet.http.HttpServletRequest;
 
 Before writing or modifying any code, agents MUST verify:
 
-1. **Parent POM version** matches `4.0.5` — do not upgrade without platform-wide coordination
+1. **Parent POM version** matches `4.0.5` â do not upgrade without platform-wide coordination
 2. **mogul-engine-core version** matches `2.0.0` across all consumer POMs
 3. **Flyway version** matches `12.3.0` across all modules (core + flyway-database-postgresql)
-4. **Java source/target** is `21` — no Java 17 or 22 code patterns
-5. **No `javax.*` imports** — only `jakarta.*` for EE APIs
+4. **Java source/target** is `21` â no Java 17 or 22 code patterns
+5. **No `javax.*` imports** â only `jakarta.*` for EE APIs
 6. **No explicit Hibernate dialect** in YAML configurations
 
 ### Compilation Command
@@ -276,7 +295,7 @@ mvn -B install -DskipTests -Pstaging
 
 ### CI Pipeline Expectation
 
-The GitHub Actions CI pipeline runs: `clean` → `compile` → `install -DskipTests` → deploy via Railway CLI. Code that breaks `compile` blocks ALL deployments.
+The GitHub Actions CI pipeline runs: `clean` â `compile` â `install -DskipTests` â deploy via Railway CLI. Code that breaks `compile` blocks ALL deployments.
 
 ---
 
@@ -307,14 +326,14 @@ The GitHub Actions CI pipeline runs: `clean` → `compile` → `install -DskipTe
 
 ```
 io.theawesomemogul.{module}
-    ├── config/          # @Configuration classes (JacksonConfig, WebClientConfig, SecurityConfig)
-    ├── controller/      # @RestController endpoints
-    ├── dto/             # Request/Response DTOs
-    ├── entity/          # JPA @Entity classes
-    ├── exception/       # Custom exceptions + GlobalExceptionHandler
-    ├── repository/      # Spring Data JPA repositories
-    ├── service/         # Business logic @Service classes
-    └── util/            # Static utilities
+    âââ config/          # @Configuration classes (JacksonConfig, WebClientConfig, SecurityConfig)
+    âââ controller/      # @RestController endpoints
+    âââ dto/             # Request/Response DTOs
+    âââ entity/          # JPA @Entity classes
+    âââ exception/       # Custom exceptions + GlobalExceptionHandler
+    âââ repository/      # Spring Data JPA repositories
+    âââ service/         # Business logic @Service classes
+    âââ util/            # Static utilities
 ```
 
 ### Error Response Format
@@ -344,25 +363,67 @@ Error codes: `MOG-BAD-REQUEST`, `MOG-NOT-FOUND`, `MOG-UNAUTHORIZED`, `MOG-AI-SER
 
 ### Railway Services
 
-| Service             | Project ID                           |
-|---------------------|--------------------------------------|
-| mogul-access-engine | `b881a879-568e-4fd9-8371-e991874a81bf` |
-| mogul-ai-engine     | `fd983bb1-704d-4084-9c6a-0123a7145fe3` |
+| Service             | Subdomain                  | Internal Port |
+|---------------------|----------------------------|---------------|
+| mogul-api-gateway   | `api.theawesomemogul.io`   | 8090          |
+| mogul-access-engine | `keystone.theawesomemogul.io` | 8080       |
+| mogul-ai-engine     | `mogul.theawesomemogul.io` | 8081          |
+| mogul-web-portal    | `portal.theawesomemogul.io`| 80 (nginx)    |
+
+> **Architecture:** All browser requests â mogul-web-portal â mogul-api-gateway â backends.
+> The gateway routes by path prefix: `/api/design/**`, `/api/presets/**`, `/api/prompt/**`,
+> `/api/sessions/**`, `/api/user/**` â AI Engine. Everything else â Keystone.
 
 ---
 
 ## 8. Security Standards
 
-- OWASP Dependency-Check fails build on CVSS >= 7.0
-- SpotBugs + FindSecBugs enabled (SAST)
-- No secrets in code or YAML files — all via environment variables
+- OWASP Dependency-Check enabled â fails build on CVSS >= 7.0
+- SpotBugs + FindSecBugs enabled (SAST) â active in CI pipeline
+- No secrets in code or YAML files â all via environment variables
 - JWT-based authentication (JJWT 0.13.0 in access-engine)
-- Spring Security with OAuth2 JOSE for inter-service auth
+- Spring Security 7.x with OAuth2 JOSE for inter-service auth
 - BCrypt password hashing (strength 10, `$2b$10$` prefix)
+- CORS centralized in mogul-api-gateway â backends accept only internal/localhost origins
 
 ---
 
-## 9. Agent Behavior Rules
+## 9. Version Lock â Anti-Bot Drift Protection
+
+> **INCIDENT 2026-04-02:** `railway-app[bot]` auto-upgraded `java.version` from 21â25 via PR #98.
+> Dockerfile still used `eclipse-temurin:21` â JDK 21 cannot compile `--release 25` â **build failure**.
+> No dependency in our stack requires Java 25. Spring Cloud 2025.1.1 floor is Java 21.
+
+### Version Compatibility Contract
+
+| Component              | Locked Version | Lock Reason                                    |
+|------------------------|---------------|------------------------------------------------|
+| Java (source/target)   | **21**        | Dockerfile base = `eclipse-temurin:21`          |
+| Spring Boot            | **4.0.x**     | Parent POM                                     |
+| Spring Cloud           | **2025.1.x**  | Oakwood â required for Boot 4.0.x              |
+| SpringDoc OpenAPI      | **3.0.1**     | Jackson 3.x HATEOAS conflict at 3.0.2         |
+
+### Lock Rules
+
+1. **`<java.version>` in pom.xml MUST match Dockerfile JDK major version** â no exceptions
+2. **NO automated PR may change `<java.version>`** without corresponding Dockerfile update
+3. **Spring Cloud version MUST be compatible** with the Spring Boot parent version
+4. **Any version upgrade requires:**
+   - Compatibility matrix check against this table
+   - Dockerfile base image alignment
+   - Local `mvn clean compile` verification
+   - AGENTS.md update in ALL 4 repos
+   - Linear issue documenting the change
+
+### Bot / Automated PR Policy
+
+- **REJECT** any bot-created PR that modifies `<java.version>`, Spring Boot parent, or Spring Cloud BOM
+- **REVIEW** dependency update PRs against the compatibility contract above
+- CI build naturally guards: mismatched java.version vs Dockerfile will fail compilation
+
+---
+
+## 10. Agent Behavior Rules
 
 ### Before Writing Code
 
@@ -391,11 +452,11 @@ Error codes: `MOG-BAD-REQUEST`, `MOG-NOT-FOUND`, `MOG-UNAUTHORIZED`, `MOG-AI-SER
 
 ---
 
-## 10. Reference Links
+## 11. Reference Links
 
 - **Engineering Standards Site:** `https://sonic-grit-labs.github.io/engineering-standards/`
 - **Notion Environment Matrix:** Search "Environment & Version Matrix" in Notion workspace
-- **Linear Project:** EPIC 0 — Platform Infrastructure
+- **Linear Project:** EPIC 0 â Platform Infrastructure
 - **GitHub Org:** `https://github.com/Sonic-Grit-Labs`
 
 ---
