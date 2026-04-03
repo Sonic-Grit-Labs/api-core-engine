@@ -91,8 +91,8 @@ Add to your service's `pom.xml`:
 ```xml
 <dependency>
     <groupId>io.theawesomemogul</groupId>
-    <artifactId>mogul-engine-core</artifactId>
-    <version>1.0.1</version>
+    <artifactId>api-core-engine</artifactId>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -108,7 +108,7 @@ Since this library is published to **GitHub Packages**, consuming projects (e.g.
 <repositories>
     <repository>
         <id>github</id>
-        <url>https://maven.pkg.github.com/Sonic-Grit-Labs/mogul-engine-core</url>
+        <url>https://maven.pkg.github.com/Sonic-Grit-Labs/api-core-engine</url>
     </repository>
 </repositories>
 ```
