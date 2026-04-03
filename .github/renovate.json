@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchManagers": ["maven"],
+      "matchPackageNames": ["java"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false,
+      "description": "LOCKED: Java version must match Dockerfile base image. Manual upgrade only."
+    },
+    {
+      "matchManagers": ["maven"],
+      "matchPackageNames": ["org.springframework.cloud:spring-cloud-dependencies"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+      "description": "LOCKED: Spring Cloud major must be compatible with Spring Boot parent."
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["eclipse-temurin"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false,
+      "description": "LOCKED: JDK base image must match pom.xml java.version."
+    }
+  ],
+  "labels": ["dependencies", "version-lock-review"],
+  "assignees": ["usegall-dev"]
+}
