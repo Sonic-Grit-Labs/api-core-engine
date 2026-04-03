@@ -48,7 +48,7 @@ public abstract class SoftDeletableEntity extends BaseEntity {
      *
      * @since 1.0.0
      */
-    public void softDelete() {
+    public synchronized void softDelete() {
         this.deleted = true;
         this.deletedAt = LocalDateTime.now();
     }
@@ -58,7 +58,7 @@ public abstract class SoftDeletableEntity extends BaseEntity {
      *
      * @since 1.0.0
      */
-    public void restore() {
+    public synchronized void restore() {
         this.deleted = false;
         this.deletedAt = null;
     }
