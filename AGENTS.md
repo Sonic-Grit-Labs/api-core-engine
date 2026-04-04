@@ -44,7 +44,7 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 
 | Tool                        | Version  | Property Key                          |
 |-----------------------------|----------|---------------------------------------|
-| Maven Compiler Plugin       | 3.13.0   | `${maven-compiler-plugin.version}`    |
+| Maven Compiler Plugin       | 3.14.1   | `${maven-compiler-plugin.version}`    |
 | Maven Surefire Plugin       | 3.5.2    | `${maven-surefire-plugin.version}`    |
 | Maven JAR Plugin            | 3.4.2    | `${maven-jar-plugin.version}`         |
 | Maven Source Plugin         | 3.3.1    | `${maven-source-plugin.version}`      |

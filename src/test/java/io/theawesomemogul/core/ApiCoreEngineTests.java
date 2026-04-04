@@ -104,7 +104,7 @@ class ApiCoreEngineTests {
         exception.withDetail("searchedAt", "2026-03-31");
 
         assertEquals("MOG-NOT-FOUND", exception.getErrorCode());
-        assertEquals(404, exception.getHttpStatus().value());
+        assertEquals(404, exception.getStatusCode());
         assertEquals(2, exception.getDetails().size());
         assertTrue(exception.getDetails().containsKey("userId"));
     }
@@ -116,7 +116,7 @@ class ApiCoreEngineTests {
         exception.withDetail("reason", "format");
 
         assertEquals("MOG-BAD-REQUEST", exception.getErrorCode());
-        assertEquals(400, exception.getHttpStatus().value());
+        assertEquals(400, exception.getStatusCode());
     }
 
     @Test

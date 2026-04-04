@@ -33,7 +33,7 @@ import java.util.Map;
 public abstract class MogulException extends RuntimeException {
 
     private final String errorCode;
-    private final HttpStatus httpStatus;
+    private final int statusCode;
     private final Map<String, Object> details;
 
     /**
@@ -57,7 +57,7 @@ public abstract class MogulException extends RuntimeException {
      */
     public MogulException(String message, HttpStatus httpStatus, String errorCode) {
         super(message);
-        this.httpStatus = httpStatus;
+        this.statusCode = httpStatus.value();
         this.errorCode = errorCode != null ? errorCode : "MOG-ERROR";
         this.details = new HashMap<>();
     }
@@ -73,9 +73,20 @@ public abstract class MogulException extends RuntimeException {
      */
     public MogulException(String message, HttpStatus httpStatus, String errorCode, Throwable cause) {
         super(message, cause);
-        this.httpStatus = httpStatus;
+        this.statusCode = httpStatus.value();
         this.errorCode = errorCode != null ? errorCode : "MOG-ERROR";
         this.details = new HashMap<>();
+    }
+
+    /**
+     * Returns the HTTP status as a Spring HttpStatus enum.
+     * Provided for backward compatibility with consumers that expect HttpStatus.
+     *
+     * @return the HttpStatus corresponding to the stored status code
+     * @since 2.1.0
+     */
+    public HttpStatus getHttpStatus() {
+        return HttpStatus.valueOf(this.statusCode);
     }
 
     /**
@@ -113,9 +124,10 @@ public abstract class MogulException extends RuntimeException {
      */
     @Override
     public String toString() {
-        return String.format("%s [%s]: %s. Details: %s",
+        return String.format("%s [%s] (HTTP %d): %s. Details: %s",
                 this.getClass().getSimpleName(),
                 errorCode,
+                statusCode,
                 getMessage(),
                 details);
     }
