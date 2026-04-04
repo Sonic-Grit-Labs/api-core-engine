@@ -24,7 +24,7 @@ All repositories MUST use these exact versions. Never upgrade or downgrade witho
 | Jakarta EE             | 11        | Managed by Spring Boot BOM          |
 | PostgreSQL Driver      | BOM       | Managed by Spring Boot BOM          |
 | Flyway                 | 12.3.0    | `${flyway.version}` property        |
-| Lombok                 | BOM       | Managed by Spring Boot BOM          |
+| Lombok                 | 1.18.44   | `${lombok.version}` property        |
 | Jackson                | 3.x (BOM) | Managed by Spring Boot BOM         |
 
 ### Spring Cloud Stack (mogul-api-gateway only)
@@ -458,6 +458,85 @@ Error codes: `MOG-BAD-REQUEST`, `MOG-NOT-FOUND`, `MOG-UNAUTHORIZED`, `MOG-AI-SER
 - **Notion Environment Matrix:** Search "Environment & Version Matrix" in Notion workspace
 - **Linear Project:** EPIC 0 â Platform Infrastructure
 - **GitHub Org:** `https://github.com/Sonic-Grit-Labs`
+
+---
+
+## 12. Native Stack Priority — No External Runtime Dependencies
+
+> **INCIDENT 2026-04-04:** Compilation errors with maven-compiler-plugin 3.14.1 were caused by
+> Spring `HttpStatus` enum coupling. Fix required pure Java refactoring (store `int statusCode`
+> internally). No Python scripts, no Node.js helpers, no external runtimes were used.
+
+### Rule: Java-Native Solutions Only
+
+All code, build scripts, CI pipelines, and error handling routines MUST use **Java-native solutions**
+compatible with the defined stack. External runtimes (Python, Node.js, Ruby, Bash scripts with
+external tools) are PROHIBITED in production code and build processes.
+
+### Allowed Stack
+
+| Layer | Allowed Technologies |
+|-------|---------------------|
+| Language | Java 21 (OpenJDK / Eclipse Temurin) |
+| Framework | Spring Boot 4.0.5, Spring Framework 7.0.x |
+| Build | Maven 3.9+ with plugins from `<properties>` block |
+| ORM | Hibernate 7.x (managed by Boot BOM) |
+| Database | PostgreSQL 16+ via JDBC, Flyway 12.3.0 migrations |
+| Security | Spring Security 7.x, JJWT 0.13.0, OAuth2 JOSE |
+| JSON | Jackson 3.x (managed by Boot BOM) |
+| Code Gen | Lombok 1.18.44 (compile-time only) |
+| Testing | JUnit 5, Spring Test (managed by Boot BOM) |
+| SAST | SpotBugs 4.8.3.1, FindSecBugs 1.13.0, OWASP 12.2.0 |
+
+### Prohibited
+
+- **Python** scripts for build, deploy, or error handling
+- **Node.js / npm** dependencies in Java projects
+- **Shell scripts** that depend on non-standard CLI tools
+- **Docker images** with multiple runtimes (e.g., Python + Java)
+- **Third-party HTTP clients** when Spring `WebClient` or `RestClient` suffices
+- **External enum/type libraries** when Java SDK primitives (`int`, `String`, `Map`) work
+
+### Design Pattern: Portable Types Over Framework Enums
+
+When interfacing between layers (exception → response, entity → DTO), prefer Java primitives
+and SDK types over framework-specific enums for internal storage:
+
+```java
+// CORRECT — portable, no framework coupling for storage
+private final int statusCode;
+public HttpStatus getHttpStatus() { return HttpStatus.valueOf(statusCode); }
+
+// WRONG — couples internal storage to Spring enum, breaks across versions
+private final HttpStatus httpStatus;
+```
+
+### Compliance Checklist
+
+Before every PR, verify:
+1. `mvn -B clean compile` passes with **Java 21** + **maven-compiler-plugin 3.14.1**
+2. No `import` from non-Java/non-Spring namespaces (no Python interop, no JNI unless JUCE audio core)
+3. Dockerfile uses ONLY `eclipse-temurin:21` base — no multi-runtime images
+4. CI workflows use ONLY `setup-java@v5` with `java-version: '21'` — no `setup-python`, no `setup-node`
+5. All dependency versions declared in `<properties>` block — no hardcoded versions
+
+### Canonical Version Lock (pom.xml properties)
+
+```xml
+<properties>
+    <java.version>21</java.version>
+    <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+    <lombok.version>1.18.44</lombok.version>
+    <flyway.version>12.3.0</flyway.version>
+    <spotbugs.version>4.8.3.1</spotbugs.version>
+    <findsecbugs.version>1.13.0</findsecbugs.version>
+    <owasp.dependency-check.version>12.2.0</owasp.dependency-check.version>
+    <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+    <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+    <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+</properties>
+```
 
 ---
 

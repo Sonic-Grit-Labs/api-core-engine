@@ -3,7 +3,7 @@
 > Shared Java library of common implementations for the Mogul Audio Technologies ecosystem
 
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-green)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-green)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue)](https://www.postgresql.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.9+-C71A36)](https://maven.apache.org/)
 
@@ -75,14 +75,16 @@ mogul-engine-core/
 ## Tech Stack
 
 - **Runtime:** Java 21 (OpenJDK / Eclipse Temurin)
-- **Framework:** Spring Boot 3.2.0 (dependency management only, no embedded server)
+- **Framework:** Spring Boot 4.0.5 (dependency management only, no embedded server)
 - **Persistence:** Spring Data JPA, Hibernate
 - **Database:** PostgreSQL 15+ with HikariCP connection pooling
 - **Security:** Spring Security, JWT
 - **JSON:** Jackson with Java 8+ date/time support
 - **Logging:** SLF4J + Logback
-- **Build:** Maven 3.9+
+- **Build:** Maven 3.9+, maven-compiler-plugin 3.14.1
 - **Testing:** JUnit 5, Spring Test
+
+> **Policy:** This library uses exclusively Java-native solutions. No Python, Node.js, or external runtimes. See `AGENTS.md` Section 12.
 
 ## Maven Coordinates
 
@@ -96,7 +98,7 @@ Add to your service's `pom.xml`:
 </dependency>
 ```
 
-No explicit version management needed; all transitive dependencies are managed by Spring Boot 3.2.
+No explicit version management needed; all transitive dependencies are managed by Spring Boot 4.0.5.
 
 ### GitHub Packages Repository Configuration
 
@@ -548,16 +550,16 @@ logging:
 
 ```
 mogul-engine-core
-├── Spring Boot 3.2.0
-│   ├── Spring Framework 6.1+
-│   ├── Spring Data JPA
-│   └── Spring Security
-├── PostgreSQL Driver 42.7.1
+├── Spring Boot 4.0.5
+│   ├── Spring Framework 7.0.x
+│   ├── Spring Data JPA / Hibernate 7.x
+│   └── Spring Security 7.x
+├── PostgreSQL Driver (BOM-managed)
 ├── HikariCP (connection pooling)
-├── Flyway (migrations)
-├── Jackson (JSON)
+├── Flyway 12.3.0 (pinned)
+├── Jackson 3.x (BOM-managed)
 ├── SLF4J + Logback (logging)
-├── Lombok (code generation)
+├── Lombok 1.18.44 (compile-time)
 └── JUnit 5 (testing)
 ```
 
