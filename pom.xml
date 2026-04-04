@@ -23,17 +23,14 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>25</java.version>
-        <lombok.version>1.18.44</lombok.version>
+        <java.version>21</java.version>
+         <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+       <lombok.version>1.18.44</lombok.version>
         <flyway.version>12.3.0</flyway.version>
         <spotbugs.version>4.8.3.1</spotbugs.version>
         <findsecbugs.version>1.13.0</findsecbugs.version>
         <owasp.dependency-check.version>12.2.0</owasp.dependency-check.version>
-             <!--
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>-->
@@ -144,9 +141,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>25</source>
-                    <target>25</target>
-                    <release>25</release>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
